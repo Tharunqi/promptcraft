@@ -1,0 +1,2664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>The Obsidian Protocol</title>
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;500;700;900&family=Share+Tech+Mono&family=Rajdhani:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        :root {
+            --bg-dark: #050507;
+            --neon-cyan: #00E5FF;
+            --blood-red: #FF2E3B;
+            --chrome-silver: #BFC7D5;
+            --neon-purple: #B026FF;
+            --neon-teal: #00FFD1;
+            --neon-gold: #FFD700;
+            --neon-orange: #FF6B00;
+            --neon-blue: #0066FF;
+            --neon-indigo: #5D00FF;
+            --gangster-gold: #FFD700;
+            --mob-burgundy: #800020;
+            --underworld-purple: #4B0082;
+            --concrete-gray: #2F4F4F;
+            --money-green: #00FF7F;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--chrome-silver);
+            font-family: 'Rajdhani', sans-serif;
+            overflow-x: hidden;
+            line-height: 1.6;
+            min-height: 100vh;
+            position: relative;
+            background-image: 
+                radial-gradient(circle at 20% 30%, rgba(128, 0, 32, 0.1) 0%, transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(75, 0, 130, 0.1) 0%, transparent 50%);
+        }
+
+        /* Matrix Rain Background */
+        #matrix-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -1;
+            opacity: 0.3;
+        }
+
+        /* Additional Background Elements */
+        #particles-canvas {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            z-index: -2;
+            opacity: 0.5;
+        }
+
+        /* Gangster Pattern Overlay */
+        .gangster-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                linear-gradient(45deg, transparent 49%, rgba(255, 215, 0, 0.03) 50%, transparent 51%),
+                linear-gradient(-45deg, transparent 49%, rgba(255, 215, 0, 0.03) 50%, transparent 51%);
+            background-size: 60px 60px;
+            z-index: -1;
+            opacity: 0.2;
+            pointer-events: none;
+        }
+
+        /* Scanlines Overlay */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0) 0%,
+                rgba(255, 255, 255, 0.03) 50%,
+                rgba(255, 255, 255, 0) 100%
+            );
+            background-size: 100% 4px;
+            z-index: 100;
+            pointer-events: none;
+            opacity: 0.4;
+        }
+
+        /* Glitch Overlay */
+        .glitch-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, 
+                rgba(255, 0, 0, 0.1) 0%, 
+                rgba(0, 255, 255, 0.1) 50%, 
+                rgba(255, 0, 255, 0.1) 100%);
+            z-index: 101;
+            pointer-events: none;
+            opacity: 0;
+            mix-blend-mode: overlay;
+        }
+
+        /* Sections */
+        section {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 2rem;
+            position: relative;
+            opacity: 0;
+            transition: opacity 1s ease-in-out;
+            text-align: center;
+        }
+
+        section.active {
+            opacity: 1;
+        }
+
+        .section-content {
+            max-width: 1200px;
+            width: 90%;
+            margin: 0 auto;
+        }
+
+        /* Gangster Badge */
+        .gangster-badge {
+            position: absolute;
+            top: 2rem;
+            left: 2rem;
+            width: 80px;
+            height: 80px;
+            border-radius: 50%;
+            background: linear-gradient(45deg, var(--gangster-gold), var(--mob-burgundy));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 2rem;
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--gangster-gold);
+            z-index: 10;
+            animation: badge-rotate 10s infinite linear;
+        }
+
+        @keyframes badge-rotate {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        /* Typography */
+        h1, h2, h3 {
+            font-family: 'Orbitron', sans-serif;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            margin-bottom: 1.5rem;
+        }
+
+        .terminal-text {
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Landing Screen */
+        #landing {
+            text-align: center;
+        }
+
+        .typewriter {
+            overflow: hidden;
+            border-right: 2px solid var(--neon-cyan);
+            white-space: nowrap;
+            margin: 0 auto;
+            letter-spacing: 0.1em;
+            animation: typing 3.5s steps(40, end), blink-caret 0.75s step-end infinite;
+        }
+
+        @keyframes typing {
+            from { width: 0 }
+            to { width: 100% }
+        }
+
+        @keyframes blink-caret {
+            from, to { border-color: transparent }
+            50% { border-color: var(--neon-cyan) }
+        }
+
+        .glitch {
+            position: relative;
+            color: white;
+            font-size: 4rem;
+            margin-bottom: 2rem;
+            text-shadow: 0 0 10px var(--neon-cyan), 0 0 20px var(--neon-purple);
+        }
+
+        .glitch::before, .glitch::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+        }
+
+        .glitch::before {
+            left: 2px;
+            text-shadow: -1px 0 red;
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim 5s infinite linear alternate-reverse;
+        }
+
+        .glitch::after {
+            left: -2px;
+            text-shadow: -1px 0 blue;
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim2 5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0% { clip: rect(42px, 9999px, 44px, 0); }
+            5% { clip: rect(12px, 9999px, 59px, 0); }
+            10% { clip: rect(48px, 9999px, 29px, 0); }
+            15% { clip: rect(42px, 9999px, 73px, 0); }
+            20% { clip: rect(63px, 9999px, 27px, 0); }
+            25% { clip: rect(34px, 9999px, 55px, 0); }
+            30% { clip: rect(86px, 9999px, 73px, 0); }
+            35% { clip: rect(20px, 9999px, 20px, 0); }
+            40% { clip: rect(26px, 9999px, 60px, 0); }
+            45% { clip: rect(25px, 9999px, 66px, 0); }
+            50% { clip: rect(57px, 9999px, 98px, 0); }
+            55% { clip: rect(5px, 9999px, 46px, 0); }
+            60% { clip: rect(82px, 9999px, 31px, 0); }
+            65% { clip: rect(54px, 9999px, 27px, 0); }
+            70% { clip: rect(28px, 9999px, 99px, 0); }
+            75% { clip: rect(45px, 9999px, 69px, 0); }
+            80% { clip: rect(23px, 9999px, 85px, 0); }
+            85% { clip: rect(54px, 9999px, 84px, 0); }
+            90% { clip: rect(45px, 9999px, 47px, 0); }
+            95% { clip: rect(37px, 9999px, 20px, 0); }
+            100% { clip: rect(4px, 9999px, 91px, 0); }
+        }
+
+        @keyframes glitch-anim2 {
+            0% { clip: rect(65px, 9999px, 100px, 0); }
+            5% { clip: rect(52px, 9999px, 74px, 0); }
+            10% { clip: rect(79px, 9999px, 85px, 0); }
+            15% { clip: rect(75px, 9999px, 5px, 0); }
+            20% { clip: rect(67px, 9999px, 61px, 0); }
+            25% { clip: rect(14px, 9999px, 79px, 0); }
+            30% { clip: rect(1px, 9999px, 66px, 0); }
+            35% { clip: rect(86px, 9999px, 30px, 0); }
+            40% { clip: rect(23px, 9999px, 98px, 0); }
+            45% { clip: rect(85px, 9999px, 72px, 0); }
+            50% { clip: rect(71px, 9999px, 75px, 0); }
+            55% { clip: rect(2px, 9999px, 48px, 0); }
+            60% { clip: rect(30px, 9999px, 16px, 0); }
+            65% { clip: rect(59px, 9999px, 50px, 0); }
+            70% { clip: rect(41px, 9999px, 62px, 0); }
+            75% { clip: rect(2px, 9999px, 82px, 0); }
+            80% { clip: rect(47px, 9999px, 73px, 0); }
+            85% { clip: rect(3px, 9999px, 27px, 0); }
+            90% { clip: rect(26px, 9999px, 55px, 0); }
+            95% { clip: rect(42px, 9999px, 97px, 0); }
+            100% { clip: rect(38px, 9999px, 49px, 0); }
+        }
+
+        /* Neon Button */
+        .neon-button {
+            background: transparent;
+            border: 2px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            padding: 12px 24px;
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            cursor: pointer;
+            position: relative;
+            overflow: hidden;
+            transition: 0.3s;
+            margin: 2rem auto;
+            display: block;
+            box-shadow: 0 0 10px var(--neon-cyan), inset 0 0 10px rgba(0, 229, 255, 0.2);
+            animation: pulse-glow 2s infinite;
+        }
+
+        .neon-button:hover {
+            background: var(--neon-cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--neon-cyan), 0 0 40px var(--neon-cyan), 0 0 60px var(--neon-cyan);
+            animation: none;
+        }
+
+        .neon-button:active {
+            transform: scale(0.95);
+        }
+
+        .neon-button::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 5px;
+            height: 5px;
+            background: rgba(255, 255, 255, 0.5);
+            opacity: 0;
+            border-radius: 100%;
+            transform: scale(1, 1) translate(-50%);
+            transform-origin: 50% 50%;
+        }
+
+        .neon-button:focus:not(:active)::after {
+            animation: ripple 1s ease-out;
+        }
+
+        @keyframes ripple {
+            0% {
+                transform: scale(0, 0);
+                opacity: 0.5;
+            }
+            100% {
+                transform: scale(20, 20);
+                opacity: 0;
+            }
+        }
+
+        @keyframes pulse-glow {
+            0% { box-shadow: 0 0 10px var(--neon-cyan), inset 0 0 10px rgba(0, 229, 255, 0.2); }
+            50% { box-shadow: 0 0 15px var(--neon-cyan), 0 0 20px rgba(0, 229, 255, 0.4), inset 0 0 15px rgba(0, 229, 255, 0.3); }
+            100% { box-shadow: 0 0 10px var(--neon-cyan), inset 0 0 10px rgba(0, 229, 255, 0.2); }
+        }
+
+        /* Gangster Button Variant */
+        .gangster-button {
+            border-color: var(--gangster-gold);
+            color: var(--gangster-gold);
+            box-shadow: 0 0 10px var(--gangster-gold), inset 0 0 10px rgba(255, 215, 0, 0.2);
+            animation: gangster-pulse 2s infinite;
+        }
+
+        .gangster-button:hover {
+            background: var(--gangster-gold);
+            color: var(--bg-dark);
+            box-shadow: 0 0 20px var(--gangster-gold), 0 0 40px var(--gangster-gold), 0 0 60px var(--gangster-gold);
+        }
+
+        @keyframes gangster-pulse {
+            0% { box-shadow: 0 0 10px var(--gangster-gold), inset 0 0 10px rgba(255, 215, 0, 0.2); }
+            50% { box-shadow: 0 0 15px var(--gangster-gold), 0 0 20px rgba(255, 215, 0, 0.4), inset 0 0 15px rgba(255, 215, 0, 0.3); }
+            100% { box-shadow: 0 0 10px var(--gangster-gold), inset 0 0 10px rgba(255, 215, 0, 0.2); }
+        }
+
+        /* AI Interrogator */
+        .interrogation-container {
+            background: rgba(5, 5, 7, 0.9);
+            border: 1px solid var(--neon-cyan);
+            padding: 2rem;
+            margin: 1rem auto;
+            max-width: 800px;
+            width: 90%;
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+            position: relative;
+            overflow: hidden;
+            animation: float 6s ease-in-out infinite;
+        }
+
+        .interrogation-container::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            background: linear-gradient(45deg, var(--neon-cyan), var(--neon-purple), var(--neon-teal));
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.2;
+        }
+
+        @keyframes float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-10px); }
+            100% { transform: translateY(0px); }
+        }
+
+        .chat-container {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid rgba(0, 229, 255, 0.3);
+            padding: 1rem;
+            margin-bottom: 1rem;
+            background: rgba(0, 0, 0, 0.5);
+            text-align: left;
+        }
+
+        .message {
+            margin-bottom: 1rem;
+            opacity: 0;
+            animation: fadeIn 0.5s forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .ai-message {
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+        }
+
+        .user-message {
+            color: var(--neon-teal);
+            text-align: right;
+            font-size: 1.1rem;
+        }
+
+        .typing-indicator {
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1.1rem;
+        }
+
+        .typing-indicator::after {
+            content: '|';
+            animation: blink 1s infinite;
+        }
+
+        .options-container {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            margin-top: 1rem;
+        }
+
+        .option-btn {
+            background: rgba(0, 0, 0, 0.5);
+            border: 1px solid var(--neon-purple);
+            color: var(--chrome-silver);
+            padding: 12px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-align: center;
+            font-family: 'Rajdhani', sans-serif;
+            font-size: 1rem;
+        }
+
+        .option-btn:hover {
+            background: var(--neon-purple);
+            color: var(--bg-dark);
+            box-shadow: 0 0 10px var(--neon-purple);
+        }
+
+        .trap-option {
+            border-color: var(--blood-red);
+            animation: trap-pulse 1.5s infinite;
+        }
+
+        .trap-option:hover {
+            background: var(--blood-red);
+            box-shadow: 0 0 15px var(--blood-red);
+        }
+
+        @keyframes trap-pulse {
+            0% { border-color: var(--blood-red); }
+            50% { border-color: var(--neon-orange); }
+            100% { border-color: var(--blood-red); }
+        }
+
+        .warning-message {
+            color: var(--blood-red);
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.3rem;
+            text-align: center;
+            margin-top: 1rem;
+            animation: warning-pulse 0.5s infinite alternate;
+        }
+
+        @keyframes warning-pulse {
+            from { opacity: 0.7; transform: scale(1); }
+            to { opacity: 1; transform: scale(1.05); }
+        }
+
+        /* Role Card */
+        .role-card {
+            background: rgba(5, 5, 7, 0.9);
+            border: 1px solid;
+            padding: 2rem;
+            max-width: 600px;
+            width: 90%;
+            position: relative;
+            overflow: hidden;
+            margin: 2rem auto;
+            box-shadow: 0 0 20px;
+            transition: transform 0.3s ease;
+            animation: card-appear 1s ease-out;
+        }
+
+        .role-card:hover {
+            transform: perspective(1000px) rotateX(5deg) rotateY(5deg);
+            animation: card-hover 0.5s ease-in-out;
+        }
+
+        .role-card::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            z-index: -1;
+            filter: blur(20px);
+            opacity: 0.3;
+        }
+
+        @keyframes card-appear {
+            0% { opacity: 0; transform: scale(0.8) rotateY(90deg); }
+            100% { opacity: 1; transform: scale(1) rotateY(0deg); }
+        }
+
+        @keyframes card-hover {
+            0% { transform: perspective(1000px) rotateX(0) rotateY(0); }
+            50% { transform: perspective(1000px) rotateX(5deg) rotateY(5deg) scale(1.05); }
+            100% { transform: perspective(1000px) rotateX(5deg) rotateY(5deg); }
+        }
+
+        .role-card.crimson { border-color: var(--blood-red); box-shadow: 0 0 20px rgba(255, 46, 59, 0.5); }
+        .role-card.crimson::before { background: linear-gradient(45deg, var(--blood-red), #FF6B6B); }
+
+        .role-card.red { border-color: var(--blood-red); box-shadow: 0 0 20px rgba(255, 46, 59, 0.5); }
+        .role-card.red::before { background: linear-gradient(45deg, var(--blood-red), #FF6B6B); }
+
+        .role-card.gold { border-color: var(--gangster-gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.5); }
+        .role-card.gold::before { background: linear-gradient(45deg, var(--gangster-gold), #FFA500); }
+
+        .role-card.teal { border-color: var(--neon-teal); box-shadow: 0 0 20px rgba(0, 255, 209, 0.5); }
+        .role-card.teal::before { background: linear-gradient(45deg, var(--neon-teal), #00B894); }
+
+        .role-card.purple { border-color: var(--underworld-purple); box-shadow: 0 0 20px rgba(75, 0, 130, 0.5); }
+        .role-card.purple::before { background: linear-gradient(45deg, var(--underworld-purple), #8E44AD); }
+
+        .role-card.cyan { border-color: var(--neon-cyan); box-shadow: 0 0 20px rgba(0, 229, 255, 0.5); }
+        .role-card.cyan::before { background: linear-gradient(45deg, var(--neon-cyan), #0984E3); }
+
+        .role-card.silver { border-color: var(--chrome-silver); box-shadow: 0 0 20px rgba(191, 199, 213, 0.5); }
+        .role-card.silver::before { background: linear-gradient(45deg, var(--chrome-silver), #636E72); }
+
+        .role-card.blue { border-color: var(--neon-blue); box-shadow: 0 0 20px rgba(0, 102, 255, 0.5); }
+        .role-card.blue::before { background: linear-gradient(45deg, var(--neon-blue), #3742FA); }
+
+        .role-card.grey { border-color: var(--concrete-gray); box-shadow: 0 0 20px rgba(47, 79, 79, 0.5); }
+        .role-card.grey::before { background: linear-gradient(45deg, var(--concrete-gray), #2C3E50); }
+
+        .role-card.indigo { border-color: var(--neon-indigo); box-shadow: 0 0 20px rgba(93, 0, 255, 0.5); }
+        .role-card.indigo::before { background: linear-gradient(45deg, var(--neon-indigo), #6C5CE7); }
+
+        .role-card.orange { border-color: var(--neon-orange); box-shadow: 0 0 20px rgba(255, 107, 0, 0.5); }
+        .role-card.orange::before { background: linear-gradient(45deg, var(--neon-orange), #E17055); }
+
+        .role-card.burgundy { border-color: var(--mob-burgundy); box-shadow: 0 0 20px rgba(128, 0, 32, 0.5); }
+        .role-card.burgundy::before { background: linear-gradient(45deg, var(--mob-burgundy), #B22222); }
+
+        .role-card.money { border-color: var(--money-green); box-shadow: 0 0 20px rgba(0, 255, 127, 0.5); }
+        .role-card.money::before { background: linear-gradient(45deg, var(--money-green), #32CD32); }
+
+        .role-card.glitch { 
+            border-color: var(--blood-red); 
+            box-shadow: 0 0 20px rgba(255, 46, 59, 0.5);
+            animation: glitch-border 2s infinite linear, card-appear 1s ease-out;
+        }
+        .role-card.glitch::before { 
+            background: linear-gradient(45deg, var(--blood-red), #FF6B6B);
+            animation: glitch-bg 2s infinite linear;
+        }
+
+        @keyframes glitch-border {
+            0% { border-color: var(--blood-red); }
+            25% { border-color: var(--neon-cyan); }
+            50% { border-color: var(--neon-purple); }
+            75% { border-color: var(--gangster-gold); }
+            100% { border-color: var(--blood-red); }
+        }
+
+        @keyframes glitch-bg {
+            0% { background: linear-gradient(45deg, var(--blood-red), #FF6B6B); }
+            25% { background: linear-gradient(45deg, var(--neon-cyan), #0984E3); }
+            50% { background: linear-gradient(45deg, var(--neon-purple), #8E44AD); }
+            75% { background: linear-gradient(45deg, var(--gangster-gold), #FFA500); }
+            100% { background: linear-gradient(45deg, var(--blood-red), #FF6B6B); }
+        }
+
+        .role-title {
+            font-size: 2.5rem;
+            margin-bottom: 1rem;
+            text-align: center;
+            animation: text-flicker 3s infinite;
+        }
+
+        .role-description {
+            margin-bottom: 1.5rem;
+            text-align: center;
+            font-size: 1.2rem;
+        }
+
+        @keyframes text-flicker {
+            0% { opacity: 1; }
+            2% { opacity: 0.8; }
+            4% { opacity: 1; }
+            19% { opacity: 1; }
+            21% { opacity: 0.7; }
+            23% { opacity: 1; }
+            80% { opacity: 1; }
+            83% { opacity: 0.6; }
+            86% { opacity: 1; }
+            100% { opacity: 1; }
+        }
+
+        .stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1.5rem;
+        }
+
+        .stat {
+            flex: 1;
+            text-align: center;
+        }
+
+        .stat-name {
+            font-size: 1rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-bar {
+            height: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 5px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .stat-fill {
+            height: 100%;
+            border-radius: 5px;
+            transition: width 1.5s ease-in-out;
+            animation: stat-pulse 2s infinite;
+        }
+
+        @keyframes stat-pulse {
+            0% { opacity: 1; }
+            50% { opacity: 0.8; }
+            100% { opacity: 1; }
+        }
+
+        .stealth-fill { background: linear-gradient(90deg, #2C3E50, var(--neon-indigo)); }
+        .tech-fill { background: linear-gradient(90deg, #0984E3, var(--neon-cyan)); }
+        .force-fill { background: linear-gradient(90deg, #E74C3C, var(--blood-red)); }
+
+        /* ID Badge */
+        #badge-canvas {
+            border: 1px solid var(--neon-cyan);
+            box-shadow: 0 0 20px rgba(0, 229, 255, 0.5);
+            margin: 2rem auto;
+            display: block;
+            max-width: 100%;
+            animation: badge-glow 3s infinite alternate;
+        }
+
+        @keyframes badge-glow {
+            0% { box-shadow: 0 0 20px rgba(0, 229, 255, 0.5); }
+            100% { box-shadow: 0 0 30px rgba(0, 229, 255, 0.8), 0 0 40px rgba(0, 229, 255, 0.6); }
+        }
+
+        /* Mission Board */
+        .mission-board {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .mission-card {
+            width: 300px;
+            height: 200px;
+            perspective: 1000px;
+        }
+
+        .mission-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+            animation: mission-float 4s ease-in-out infinite;
+        }
+
+        .mission-card:hover .mission-card-inner {
+            transform: rotateY(180deg);
+            animation: none;
+        }
+
+        @keyframes mission-float {
+            0% { transform: translateY(0px) rotateY(0deg); }
+            50% { transform: translateY(-10px) rotateY(5deg); }
+            100% { transform: translateY(0px) rotateY(0deg); }
+        }
+
+        .mission-card-front, .mission-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border: 1px solid var(--neon-cyan);
+            padding: 1.5rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(5, 5, 7, 0.9);
+            box-shadow: 0 0 15px rgba(0, 229, 255, 0.3);
+        }
+
+        .mission-card-back {
+            transform: rotateY(180deg);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        /* Roles Grid */
+        .roles-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 2rem;
+            max-width: 1200px;
+            width: 90%;
+            margin: 2rem auto;
+        }
+
+        .role-preview {
+            background: rgba(5, 5, 7, 0.8);
+            border: 1px solid;
+            padding: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: all 0.3s ease;
+            height: 100%;
+            animation: preview-appear 0.5s ease-out;
+        }
+
+        .role-preview:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            animation: preview-hover 0.3s ease-in-out;
+        }
+
+        .role-preview::before {
+            content: '';
+            position: absolute;
+            top: -10px;
+            left: -10px;
+            right: -10px;
+            bottom: -10px;
+            z-index: -1;
+            filter: blur(15px);
+            opacity: 0.2;
+        }
+
+        @keyframes preview-appear {
+            0% { opacity: 0; transform: translateY(20px); }
+            100% { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes preview-hover {
+            0% { transform: translateY(0); }
+            50% { transform: translateY(-5px) scale(1.02); }
+            100% { transform: translateY(-5px); }
+        }
+
+        /* Role color classes */
+        .role-preview.crimson { border-color: var(--blood-red); }
+        .role-preview.crimson::before { background: linear-gradient(45deg, var(--blood-red), #FF6B6B); }
+
+        .role-preview.red { border-color: var(--blood-red); }
+        .role-preview.red::before { background: linear-gradient(45deg, var(--blood-red), #FF6B6B); }
+
+        .role-preview.gold { border-color: var(--gangster-gold); }
+        .role-preview.gold::before { background: linear-gradient(45deg, var(--gangster-gold), #FFA500); }
+
+        .role-preview.teal { border-color: var(--neon-teal); }
+        .role-preview.teal::before { background: linear-gradient(45deg, var(--neon-teal), #00B894); }
+
+        .role-preview.purple { border-color: var(--underworld-purple); }
+        .role-preview.purple::before { background: linear-gradient(45deg, var(--underworld-purple), #8E44AD); }
+
+        .role-preview.cyan { border-color: var(--neon-cyan); }
+        .role-preview.cyan::before { background: linear-gradient(45deg, var(--neon-cyan), #0984E3); }
+
+        .role-preview.silver { border-color: var(--chrome-silver); }
+        .role-preview.silver::before { background: linear-gradient(45deg, var(--chrome-silver), #636E72); }
+
+        .role-preview.blue { border-color: var(--neon-blue); }
+        .role-preview.blue::before { background: linear-gradient(45deg, var(--neon-blue), #3742FA); }
+
+        .role-preview.grey { border-color: var(--concrete-gray); }
+        .role-preview.grey::before { background: linear-gradient(45deg, var(--concrete-gray), #2C3E50); }
+
+        .role-preview.indigo { border-color: var(--neon-indigo); }
+        .role-preview.indigo::before { background: linear-gradient(45deg, var(--neon-indigo), #6C5CE7); }
+
+        .role-preview.orange { border-color: var(--neon-orange); }
+        .role-preview.orange::before { background: linear-gradient(45deg, var(--neon-orange), #E17055); }
+
+        .role-preview.burgundy { border-color: var(--mob-burgundy); }
+        .role-preview.burgundy::before { background: linear-gradient(45deg, var(--mob-burgundy), #B22222); }
+
+        .role-preview.money { border-color: var(--money-green); }
+        .role-preview.money::before { background: linear-gradient(45deg, var(--money-green), #32CD32); }
+
+        .role-preview.glitch { 
+            border-color: var(--blood-red);
+            animation: glitch-border 2s infinite linear, preview-appear 0.5s ease-out;
+        }
+        .role-preview.glitch::before { 
+            background: linear-gradient(45deg, var(--blood-red), #FF6B6B);
+            animation: glitch-bg 2s infinite linear;
+        }
+
+        .role-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1rem;
+        }
+
+        .role-preview-name {
+            font-size: 1.5rem;
+            font-family: 'Orbitron', sans-serif;
+            animation: text-flicker 3s infinite;
+        }
+
+        .role-preview-symbol {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.2rem;
+            background: rgba(255, 255, 255, 0.1);
+            animation: symbol-spin 5s infinite linear;
+        }
+
+        @keyframes symbol-spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+
+        .role-preview-description {
+            font-size: 1rem;
+            margin-bottom: 1rem;
+            color: var(--chrome-silver);
+        }
+
+        .role-preview-stats {
+            display: flex;
+            justify-content: space-between;
+            margin-top: 1rem;
+        }
+
+        .role-preview-stat {
+            text-align: center;
+            flex: 1;
+        }
+
+        .role-preview-stat-name {
+            font-size: 0.9rem;
+            margin-bottom: 0.3rem;
+            color: var(--chrome-silver);
+        }
+
+        .role-preview-stat-value {
+            font-size: 1rem;
+            font-family: 'Share Tech Mono', monospace;
+        }
+
+        /* Lore Section */
+        .lore-container {
+            max-width: 800px;
+            width: 90%;
+        }
+
+        .lore-text {
+            margin-bottom: 2rem;
+            opacity: 0;
+            transform: translateY(20px);
+            transition: opacity 0.8s ease, transform 0.8s ease;
+            font-size: 1.1rem;
+        }
+
+        .lore-text.visible {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .leader-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .leader-card {
+            background: rgba(5, 5, 7, 0.8);
+            border: 1px solid var(--underworld-purple);
+            padding: 1.5rem;
+            text-align: center;
+            box-shadow: 0 0 15px rgba(75, 0, 130, 0.3);
+            transition: all 0.3s ease;
+            animation: leader-appear 0.5s ease-out;
+        }
+
+        .leader-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(75, 0, 130, 0.5);
+        }
+
+        @keyframes leader-appear {
+            0% { opacity: 0; transform: translateY(20px) scale(0.9); }
+            100% { opacity: 1; transform: translateY(0) scale(1); }
+        }
+
+        .leader-portrait {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            margin: 0 auto 1rem;
+            background: linear-gradient(45deg, var(--underworld-purple), var(--neon-cyan));
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 3rem;
+            color: var(--bg-dark);
+            animation: portrait-glow 3s infinite alternate;
+        }
+
+        @keyframes portrait-glow {
+            0% { box-shadow: 0 0 10px rgba(75, 0, 130, 0.5); }
+            100% { box-shadow: 0 0 20px rgba(75, 0, 130, 0.8), 0 0 30px rgba(0, 229, 255, 0.6); }
+        }
+
+        /* Terminal */
+        #terminal {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            display: none;
+            flex-direction: column;
+            padding: 2rem;
+            font-family: 'Share Tech Mono', monospace;
+            color: var(--neon-cyan);
+        }
+
+        .terminal-header {
+            text-align: center;
+            margin-bottom: 2rem;
+            border-bottom: 1px solid var(--neon-cyan);
+            padding-bottom: 1rem;
+        }
+
+        .terminal-output {
+            flex: 1;
+            overflow-y: auto;
+            margin-bottom: 1rem;
+        }
+
+        .terminal-input-line {
+            display: flex;
+            align-items: center;
+        }
+
+        .terminal-prompt {
+            margin-right: 0.5rem;
+        }
+
+        #terminal-input {
+            background: transparent;
+            border: none;
+            color: var(--neon-cyan);
+            font-family: 'Share Tech Mono', monospace;
+            font-size: 1rem;
+            flex: 1;
+            outline: none;
+        }
+
+        .cursor {
+            display: inline-block;
+            width: 8px;
+            height: 16px;
+            background: var(--neon-cyan);
+            margin-left: 2px;
+            animation: blink 1s infinite;
+        }
+
+        @keyframes blink {
+            0%, 100% { opacity: 1; }
+            50% { opacity: 0; }
+        }
+
+        /* Navigation */
+        .nav-dots {
+            position: fixed;
+            right: 2rem;
+            top: 50%;
+            transform: translateY(-50%);
+            z-index: 10;
+        }
+
+        .nav-dot {
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            background: rgba(191, 199, 213, 0.3);
+            margin: 1rem 0;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            position: relative;
+        }
+
+        .nav-dot.active {
+            background: var(--neon-cyan);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: dot-pulse 2s infinite;
+        }
+
+        .nav-dot::after {
+            content: '';
+            position: absolute;
+            top: -5px;
+            left: -5px;
+            right: -5px;
+            bottom: -5px;
+            border-radius: 50%;
+            border: 1px solid var(--neon-cyan);
+            opacity: 0;
+            transition: all 0.3s ease;
+        }
+
+        .nav-dot:hover::after {
+            opacity: 1;
+            animation: dot-ripple 1.5s infinite;
+        }
+
+        @keyframes dot-pulse {
+            0% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0.7); }
+            70% { box-shadow: 0 0 0 10px rgba(0, 229, 255, 0); }
+            100% { box-shadow: 0 0 0 0 rgba(0, 229, 255, 0); }
+        }
+
+        @keyframes dot-ripple {
+            0% { transform: scale(1); opacity: 1; }
+            100% { transform: scale(1.5); opacity: 0; }
+        }
+
+        /* Sound Toggle */
+        .sound-toggle {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: rgba(5, 5, 7, 0.8);
+            border: 1px solid var(--neon-cyan);
+            color: var(--neon-cyan);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            z-index: 10;
+            transition: all 0.3s ease;
+            animation: toggle-float 3s ease-in-out infinite;
+        }
+
+        .sound-toggle:hover {
+            background: var(--neon-cyan);
+            color: var(--bg-dark);
+            box-shadow: 0 0 10px var(--neon-cyan);
+            animation: none;
+        }
+
+        @keyframes toggle-float {
+            0% { transform: translateY(0px); }
+            50% { transform: translateY(-5px); }
+            100% { transform: translateY(0px); }
+        }
+
+        /* Global Glitch Effect */
+        .global-glitch {
+            animation: global-glitch 0.3s;
+        }
+
+        @keyframes global-glitch {
+            0% { transform: translateX(0); }
+            20% { transform: translateX(-5px); }
+            40% { transform: translateX(5px); }
+            60% { transform: translateX(-5px); }
+            80% { transform: translateX(5px); }
+            100% { transform: translateX(0); }
+        }
+
+        /* NEW FEATURE: Contract Signing */
+        .contract-container {
+            background: rgba(5, 5, 7, 0.9);
+            border: 1px solid var(--gangster-gold);
+            padding: 2rem;
+            margin: 1rem auto;
+            max-width: 600px;
+            width: 90%;
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.3);
+            position: relative;
+        }
+
+        .contract-text {
+            text-align: left;
+            margin-bottom: 2rem;
+            font-family: 'Share Tech Mono', monospace;
+            line-height: 1.8;
+        }
+
+        .signature-line {
+            border-top: 1px solid var(--gangster-gold);
+            margin-top: 2rem;
+            padding-top: 1rem;
+            text-align: center;
+        }
+
+        /* NEW FEATURE: Weapon Showcase */
+        .weapon-showcase {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: center;
+            gap: 2rem;
+            margin-top: 2rem;
+        }
+
+        .weapon-card {
+            width: 200px;
+            height: 250px;
+            perspective: 1000px;
+        }
+
+        .weapon-card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            text-align: center;
+            transition: transform 0.8s;
+            transform-style: preserve-3d;
+        }
+
+        .weapon-card:hover .weapon-card-inner {
+            transform: rotateY(180deg);
+        }
+
+        .weapon-card-front, .weapon-card-back {
+            position: absolute;
+            width: 100%;
+            height: 100%;
+            backface-visibility: hidden;
+            border: 1px solid var(--blood-red);
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            background: rgba(5, 5, 7, 0.9);
+            box-shadow: 0 0 15px rgba(255, 46, 59, 0.3);
+        }
+
+        .weapon-card-back {
+            transform: rotateY(180deg);
+            background: rgba(0, 0, 0, 0.9);
+        }
+
+        .weapon-icon {
+            font-size: 3rem;
+            margin-bottom: 1rem;
+            color: var(--blood-red);
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .mission-board {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .nav-dots {
+                display: none;
+            }
+            
+            .stats {
+                flex-direction: column;
+                gap: 1rem;
+            }
+            
+            .roles-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .leader-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .options-container {
+                grid-template-columns: 1fr;
+            }
+            
+            .glitch {
+                font-size: 2.5rem;
+            }
+            
+            .gangster-badge {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Matrix Rain Background -->
+    <canvas id="matrix-canvas"></canvas>
+    <canvas id="particles-canvas"></canvas>
+    <div class="scanlines"></div>
+    <div class="glitch-overlay" id="glitch-overlay"></div>
+    <div class="gangster-overlay"></div>
+
+    <!-- Gangster Badge -->
+    <div class="gangster-badge">
+        <i class="fas fa-skull"></i>
+    </div>
+
+    <!-- Navigation Dots -->
+    <div class="nav-dots">
+        <div class="nav-dot active" data-section="landing"></div>
+        <div class="nav-dot" data-section="interrogation"></div>
+        <div class="nav-dot" data-section="role"></div>
+        <div class="nav-dot" data-section="badge"></div>
+        <div class="nav-dot" data-section="contract"></div>
+        <div class="nav-dot" data-section="weapons"></div>
+        <div class="nav-dot" data-section="missions"></div>
+        <div class="nav-dot" data-section="roles"></div>
+        <div class="nav-dot" data-section="lore"></div>
+    </div>
+
+    <!-- Sound Toggle -->
+    <div class="sound-toggle" id="sound-toggle">
+        <span>♪</span>
+    </div>
+
+    <!-- Landing Section -->
+    <section id="landing" class="active">
+        <div class="section-content">
+            <div class="glitch" data-text="THE OBSIDIAN PROTOCOL">THE OBSIDIAN PROTOCOL</div>
+            <div class="typewriter terminal-text">CONNECTION SECURED...</div>
+            <div class="typewriter terminal-text" style="animation-delay: 4s;">INITIATE RECRUITMENT SEQUENCE?</div>
+            <button class="neon-button gangster-button" id="initiate-btn">INITIATE</button>
+        </div>
+    </section>
+
+    <!-- AI Interrogation Section -->
+    <section id="interrogation">
+        <div class="section-content">
+            <h2>AI SENTINEL INTERROGATION</h2>
+            <div class="interrogation-container">
+                <div class="chat-container" id="chat-container">
+                    <div class="message ai-message">
+                        > INITIALIZING SENTINEL INTERFACE...<br>
+                        > SYSTEMS ONLINE<br>
+                        > IDENTIFY YOURSELF, OPERATIVE
+                    </div>
+                </div>
+                <div id="options-container" class="options-container">
+                    <!-- Options will be dynamically generated here -->
+                </div>
+                <div id="warning-message" class="warning-message" style="display: none;"></div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Role Reveal Section -->
+    <section id="role">
+        <div class="section-content">
+            <h2>PROFILE SYNTHESIS</h2>
+            <div class="terminal-text" id="synthesis-text">ANALYZING RESPONSES...</div>
+            <div class="role-card" id="role-card" style="display: none;">
+                <h3 class="role-title" id="role-title">THE REQUIEM</h3>
+                <p class="role-description" id="role-description">Field Assassin — precision and silence.</p>
+                <div class="stats">
+                    <div class="stat">
+                        <div class="stat-name">STEALTH</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill stealth-fill" id="stealth-stat" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">TECH</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill tech-fill" id="tech-stat" style="width: 0%"></div>
+                        </div>
+                    </div>
+                    <div class="stat">
+                        <div class="stat-name">FORCE</div>
+                        <div class="stat-bar">
+                            <div class="stat-fill force-fill" id="force-stat" style="width: 0%"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            <button class="neon-button" id="generate-badge" style="display: none;">GENERATE DIGITAL ID</button>
+        </div>
+    </section>
+
+    <!-- ID Badge Section -->
+    <section id="badge">
+        <div class="section-content">
+            <h2>DIGITAL IDENTIFICATION</h2>
+            <canvas id="badge-canvas" width="600" height="400"></canvas>
+            <button class="neon-button gangster-button" id="download-badge">DOWNLOAD ID</button>
+        </div>
+    </section>
+
+    <!-- NEW FEATURE: Contract Section -->
+    <section id="contract">
+        <div class="section-content">
+            <h2>BLOOD CONTRACT</h2>
+            <div class="contract-container">
+                <div class="contract-text">
+                    <p>By accepting this contract, you hereby swear allegiance to The Obsidian Protocol.</p>
+                    <p>You agree to operate in the shadows, follow the code of silence, and uphold the interests of the organization above all else.</p>
+                    <p>Betrayal is punishable by immediate termination. There are no second chances in our world.</p>
+                    <p>The High Table watches. The Continental protects. The Protocol endures.</p>
+                </div>
+                <div class="signature-line">
+                    <p>Sign below with your blood</p>
+                    <button class="neon-button gangster-button" id="sign-contract">SIGN CONTRACT</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- NEW FEATURE: Weapons Showcase -->
+    <section id="weapons">
+        <div class="section-content">
+            <h2>ARMORY ACCESS</h2>
+            <p class="terminal-text" style="margin-bottom: 2rem;">PROTOCOL-APPROVED TACTICAL EQUIPMENT</p>
+            <div class="weapon-showcase">
+                <div class="weapon-card">
+                    <div class="weapon-card-inner">
+                        <div class="weapon-card-front">
+                            <div class="weapon-icon"><i class="fas fa-gun"></i></div>
+                            <h3>HEckler & Koch P30L</h3>
+                            <p>Standard Issue</p>
+                        </div>
+                        <div class="weapon-card-back">
+                            <p>Custom-tuned suppressor</p>
+                            <p>Extended magazine</p>
+                            <p>Match grade trigger</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="weapon-card">
+                    <div class="weapon-card-inner">
+                        <div class="weapon-card-front">
+                            <div class="weapon-icon"><i class="fas fa-knife"></i></div>
+                            <h3>Microtech Ultratech</h3>
+                            <p>Close Quarters</p>
+                        </div>
+                        <div class="weapon-card-back">
+                            <p>Double-edged dagger</p>
+                            <p>Carbon fiber handle</p>
+                            <p>Rapid deployment</p>
+                        </div>
+                    </div>
+                </div>
+                <div class="weapon-card">
+                    <div class="weapon-card-inner">
+                        <div class="weapon-card-front">
+                            <div class="weapon-icon"><i class="fas fa-laptop"></i></div>
+                            <h3>Cyber Deck X7</h3>
+                            <p>Digital Infiltration</p>
+                        </div>
+                        <div class="weapon-card-back">
+                            <p>Quantum encryption</p>
+                            <p>Neural interface</p>
+                            <p>Zero-trace protocols</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Mission Board Section -->
+    <section id="missions">
+        <div class="section-content">
+            <h2>ACTIVE MISSIONS</h2>
+            <div class="mission-board" id="mission-board">
+                <!-- Mission cards will be generated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Protocol Roles Section -->
+    <section id="roles">
+        <div class="section-content">
+            <h2>PROTOCOL ROLES</h2>
+            <p class="terminal-text" style="margin-bottom: 2rem; text-align: center;">
+                THE OBSIDIAN PROTOCOL MAINTAINS 12 SPECIALIZED OPERATIVE CLASSIFICATIONS
+            </p>
+            <div class="roles-grid" id="roles-grid">
+                <!-- Roles will be dynamically generated here -->
+            </div>
+        </div>
+    </section>
+
+    <!-- Lore Section -->
+    <section id="lore">
+        <div class="section-content">
+            <div class="lore-container">
+                <h2>THE OBSIDIAN PROTOCOL</h2>
+                <div class="lore-text">
+                    <p>In the neon-drenched underworld of NeoCity, where corporations rule from chrome towers and data flows like digital blood through the city's veins, an elite syndicate operates in the shadows.</p>
+                </div>
+                <div class="lore-text">
+                    <p>The Obsidian Protocol was formed after the Great Data War, when the old criminal empires collapsed and a new order emerged. We are the unseen hand that guides the fate of NeoCity, operating beyond the reach of corporate enforcers and government agencies.</p>
+                </div>
+                <div class="lore-text">
+                    <p>Our agents are the most skilled operatives in the underworld - assassins, hackers, forgers, and spies who have proven their worth in the crucible of the streets. Each member brings unique talents to our cause, bound by a code of honor that transcends petty loyalties.</p>
+                </div>
+                <div class="lore-text">
+                    <p>The High Table of NeoCity recognizes our authority in matters that require discretion, precision, and absolute deniability. When the corporations need problems to disappear, when politicians require leverage, when the underworld needs arbitration - they call upon The Obsidian Protocol.</p>
+                </div>
+                
+                <h3 style="margin-top: 3rem;">DIVISION LEADERS</h3>
+                <div class="leader-grid">
+                    <div class="leader-card">
+                        <div class="leader-portrait">M</div>
+                        <h4>MORPHEUS</h4>
+                        <p>Director of Operations</p>
+                        <p class="terminal-text">"Free your mind."</p>
+                    </div>
+                    <div class="leader-card">
+                        <div class="leader-portrait">T</div>
+                        <h4>TRINITY</h4>
+                        <p>Head of Field Operations</p>
+                        <p class="terminal-text">"Choice is an illusion."</p>
+                    </div>
+                    <div class="leader-card">
+                        <div class="leader-portrait">W</div>
+                        <h4>WINSTON</h4>
+                        <p>Continental Director</p>
+                        <p class="terminal-text">"Without rules, we are animals."</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Terminal -->
+    <div id="terminal">
+        <div class="terminal-header">
+            <h2>OBSIDIAN PROTOCOL TERMINAL</h2>
+            <p>Type 'help' for available commands</p>
+        </div>
+        <div class="terminal-output" id="terminal-output">
+            <div>> ACCESSING TERMINAL...</div>
+            <div>> CONNECTION ESTABLISHED</div>
+            <div>> WELCOME, OPERATIVE</div>
+        </div>
+        <div class="terminal-input-line">
+            <span class="terminal-prompt">></span>
+            <input type="text" id="terminal-input" autocomplete="off">
+            <span class="cursor"></span>
+        </div>
+    </div>
+
+    <script>
+        // Sound Effects
+        const AudioContext = window.AudioContext || window.webkitAudioContext;
+        const audioContext = new AudioContext();
+        
+        // Sound functions
+        function playGlitchSound() {
+            if (!window.soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(100, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(400, audioContext.currentTime + 0.1);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.1);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.1);
+        }
+        
+        function playClickSound() {
+            if (!window.soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sine';
+            oscillator.frequency.setValueAtTime(300, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.1, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.05);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.05);
+        }
+        
+        function playGunSound() {
+            if (!window.soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            
+            oscillator.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(80, audioContext.currentTime);
+            oscillator.frequency.exponentialRampToValueAtTime(40, audioContext.currentTime + 0.2);
+            
+            gainNode.gain.setValueAtTime(0.3, audioContext.currentTime);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, audioContext.currentTime + 0.2);
+            
+            oscillator.start();
+            oscillator.stop(audioContext.currentTime + 0.2);
+        }
+        
+        function playAmbientSound() {
+            if (!window.soundEnabled) return;
+            
+            const oscillator = audioContext.createOscillator();
+            const gainNode = audioContext.createGain();
+            const filter = audioContext.createBiquadFilter();
+            
+            oscillator.connect(filter);
+            filter.connect(gainNode);
+            gainNode.connect(audioContext.destination);
+            
+            oscillator.type = 'sawtooth';
+            oscillator.frequency.setValueAtTime(60, audioContext.currentTime);
+            
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(200, audioContext.currentTime);
+            
+            gainNode.gain.setValueAtTime(0.02, audioContext.currentTime);
+            
+            oscillator.start();
+            
+            // Store reference to stop later
+            window.ambientSound = { oscillator, gainNode };
+        }
+        
+        function stopAmbientSound() {
+            if (window.ambientSound) {
+                window.ambientSound.gainNode.gain.exponentialRampToValueAtTime(0.001, audioContext.currentTime + 1);
+                setTimeout(() => {
+                    if (window.ambientSound) {
+                        window.ambientSound.oscillator.stop();
+                        window.ambientSound = null;
+                    }
+                }, 1000);
+            }
+        }
+        
+        // Matrix Rain Background
+        const matrixCanvas = document.getElementById('matrix-canvas');
+        const matrixCtx = matrixCanvas.getContext('2d');
+        
+        matrixCanvas.width = window.innerWidth;
+        matrixCanvas.height = window.innerHeight;
+        
+        const chars = "01アイウエオカキクケコサシスセソタチツテトナニヌネノハヒフヘホマミムメモヤユヨラリルレロワヲン";
+        const charArray = chars.split("");
+        const fontSize = 14;
+        const columns = matrixCanvas.width / fontSize;
+        const drops = [];
+        
+        for(let i = 0; i < columns; i++) {
+            drops[i] = Math.floor(Math.random() * matrixCanvas.height / fontSize);
+        }
+        
+        // Background state management
+        let currentBackground = 'landing';
+        
+        function drawMatrix() {
+            // Change color based on current section
+            let color;
+            switch(currentBackground) {
+                case 'landing':
+                    color = '#00FF00'; // Green matrix code
+                    break;
+                case 'interrogation':
+                    color = '#FF2E3B'; // Red energy
+                    break;
+                case 'role':
+                    color = '#B026FF'; // Purple vortex
+                    break;
+                case 'badge':
+                    color = '#00E5FF'; // Cyan
+                    break;
+                case 'contract':
+                    color = '#FFD700'; // Gold
+                    break;
+                case 'weapons':
+                    color = '#FF2E3B'; // Blood red
+                    break;
+                case 'missions':
+                    color = '#FFD700'; // Gold
+                    break;
+                case 'roles':
+                    color = '#00FFD1'; // Teal
+                    break;
+                case 'lore':
+                    color = '#5D00FF'; // Indigo
+                    break;
+                default:
+                    color = '#00E5FF';
+            }
+            
+            matrixCtx.fillStyle = "rgba(5, 5, 7, 0.04)";
+            matrixCtx.fillRect(0, 0, matrixCanvas.width, matrixCanvas.height);
+            
+            matrixCtx.fillStyle = color;
+            matrixCtx.font = `${fontSize}px 'Share Tech Mono'`;
+            
+            for(let i = 0; i < drops.length; i++) {
+                const text = charArray[Math.floor(Math.random() * charArray.length)];
+                matrixCtx.fillText(text, i * fontSize, drops[i] * fontSize);
+                
+                if(drops[i] * fontSize > matrixCanvas.height && Math.random() > 0.975) {
+                    drops[i] = 0;
+                }
+                
+                drops[i]++;
+            }
+        }
+        
+        // Particles Background
+        const particlesCanvas = document.getElementById('particles-canvas');
+        const particlesCtx = particlesCanvas.getContext('2d');
+        
+        particlesCanvas.width = window.innerWidth;
+        particlesCanvas.height = window.innerHeight;
+        
+        const particles = [];
+        const particleCount = 100;
+        
+        for (let i = 0; i < particleCount; i++) {
+            particles.push({
+                x: Math.random() * particlesCanvas.width,
+                y: Math.random() * particlesCanvas.height,
+                size: Math.random() * 3 + 1,
+                speedX: (Math.random() - 0.5) * 2,
+                speedY: (Math.random() - 0.5) * 2,
+                color: `rgba(${Math.random() * 255}, ${Math.random() * 255}, ${Math.random() * 255}, 0.5)`
+            });
+        }
+        
+        function drawParticles() {
+            particlesCtx.clearRect(0, 0, particlesCanvas.width, particlesCanvas.height);
+            
+            // Change particle behavior based on section
+            let particleColor, particleDensity;
+            switch(currentBackground) {
+                case 'landing':
+                    particleColor = '#00FF00';
+                    particleDensity = 0.3;
+                    break;
+                case 'interrogation':
+                    particleColor = '#FF2E3B';
+                    particleDensity = 0.8;
+                    break;
+                case 'role':
+                    particleColor = '#B026FF';
+                    particleDensity = 1;
+                    break;
+                case 'badge':
+                    particleColor = '#00E5FF';
+                    particleDensity = 0.5;
+                    break;
+                case 'contract':
+                    particleColor = '#FFD700';
+                    particleDensity = 0.7;
+                    break;
+                case 'weapons':
+                    particleColor = '#FF2E3B';
+                    particleDensity = 0.9;
+                    break;
+                case 'missions':
+                    particleColor = '#FFD700';
+                    particleDensity = 0.6;
+                    break;
+                case 'roles':
+                    particleColor = '#00FFD1';
+                    particleDensity = 0.4;
+                    break;
+                case 'lore':
+                    particleColor = '#5D00FF';
+                    particleDensity = 0.7;
+                    break;
+                default:
+                    particleColor = '#00E5FF';
+                    particleDensity = 0.5;
+            }
+            
+            for (let i = 0; i < particles.length * particleDensity; i++) {
+                const p = particles[i];
+                
+                particlesCtx.beginPath();
+                particlesCtx.arc(p.x, p.y, p.size, 0, Math.PI * 2);
+                particlesCtx.fillStyle = particleColor;
+                particlesCtx.fill();
+                
+                // Update position
+                p.x += p.speedX;
+                p.y += p.speedY;
+                
+                // Bounce off edges
+                if (p.x < 0 || p.x > particlesCanvas.width) p.speedX *= -1;
+                if (p.y < 0 || p.y > particlesCanvas.height) p.speedY *= -1;
+            }
+        }
+        
+        // Animation loops
+        setInterval(drawMatrix, 35);
+        setInterval(drawParticles, 50);
+        
+        // Random glitch effect
+        function triggerGlitch() {
+            const glitchOverlay = document.getElementById('glitch-overlay');
+            glitchOverlay.style.opacity = '0.3';
+            document.body.classList.add('global-glitch');
+            playGlitchSound();
+            
+            setTimeout(() => {
+                glitchOverlay.style.opacity = '0';
+                document.body.classList.remove('global-glitch');
+            }, 300);
+        }
+        
+        // Random glitches every 5-15 seconds
+        setInterval(() => {
+            if (Math.random() > 0.7) {
+                triggerGlitch();
+            }
+        }, 5000);
+        
+        // Navigation
+        const sections = document.querySelectorAll('section');
+        const navDots = document.querySelectorAll('.nav-dot');
+        
+        function showSection(sectionId) {
+            // Update background state
+            currentBackground = sectionId;
+            
+            // Trigger glitch on section change
+            triggerGlitch();
+            
+            sections.forEach(section => {
+                section.classList.remove('active');
+            });
+            document.getElementById(sectionId).classList.add('active');
+            
+            navDots.forEach(dot => {
+                dot.classList.remove('active');
+                if(dot.dataset.section === sectionId) {
+                    dot.classList.add('active');
+                }
+            });
+            
+            // Special handling for lore section animations
+            if(sectionId === 'lore') {
+                setTimeout(() => {
+                    const loreTexts = document.querySelectorAll('.lore-text');
+                    loreTexts.forEach((text, index) => {
+                        setTimeout(() => {
+                            text.classList.add('visible');
+                        }, index * 500);
+                    });
+                }, 300);
+            }
+        }
+        
+        navDots.forEach(dot => {
+            dot.addEventListener('click', () => {
+                playClickSound();
+                showSection(dot.dataset.section);
+            });
+        });
+        
+        // Landing screen initiate button
+        document.getElementById('initiate-btn').addEventListener('click', () => {
+            playClickSound();
+            triggerGlitch();
+            setTimeout(() => {
+                showSection('interrogation');
+            }, 300);
+        });
+        
+        // AI Interrogator
+        const chatContainer = document.getElementById('chat-container');
+        const optionsContainer = document.getElementById('options-container');
+        const warningMessage = document.getElementById('warning-message');
+        
+        let currentQuestion = 0;
+        let userAnswers = {};
+        let conversationState = 'initial';
+        let warningCount = 0;
+        
+        const questions = [
+            {
+                text: "STATE YOUR CODENAME, OPERATIVE.",
+                key: "codename",
+                options: ["SHADOW", "GHOST", "REAPER", "SPECTRE"]
+            },
+            {
+                text: "WHY DO YOU SEEK ENTRY INTO THE OBSIDIAN PROTOCOL?",
+                key: "motivation",
+                options: ["POWER", "REDEMPTION", "FREEDOM", "VENGEANCE"]
+            },
+            {
+                text: "WHAT IS YOUR GREATEST STRENGTH IN THE FIELD?",
+                key: "strength",
+                options: ["STEALTH", "TECH", "FORCE", "STRATEGY"],
+                responses: {
+                    "STEALTH": { points: { stealth: 2 } },
+                    "TECH": { points: { tech: 2 } },
+                    "FORCE": { points: { force: 2 } },
+                    "STRATEGY": { points: { tactical: 2 } }
+                }
+            },
+            {
+                text: "DESCRIBE YOUR PREFERRED METHOD OF ENGAGEMENT.",
+                key: "method",
+                options: ["SILENT", "HACK", "DIRECT", "PLANNED"],
+                trapOptions: ["NEGOTIATION"], // This is a trap!
+                responses: {
+                    "SILENT": { points: { stealth: 2 } },
+                    "HACK": { points: { tech: 2 } },
+                    "DIRECT": { points: { force: 2 } },
+                    "PLANNED": { points: { tactical: 2 } },
+                    "NEGOTIATION": { trap: true }
+                }
+            },
+            {
+                text: "WHAT IS YOUR LOYALTY TO?",
+                key: "loyalty",
+                options: ["CONTRACT", "CODE", "MYSELF", "HIGHEST BIDDER"],
+                trapOptions: ["GOVERNMENT", "PUBLIC GOOD"], // These are traps!
+                responses: {
+                    "CONTRACT": { points: { tactical: 1, force: 1 } },
+                    "CODE": { points: { stealth: 1, tactical: 1 } },
+                    "MYSELF": { points: { force: 2 } },
+                    "HIGHEST BIDDER": { points: { tech: 1, tactical: 1 } },
+                    "GOVERNMENT": { trap: true },
+                    "PUBLIC GOOD": { trap: true }
+                }
+            }
+        ];
+        
+        // Initialize scoring
+        const quizAnswers = {
+            stealth: 0,
+            tech: 0,
+            force: 0,
+            tactical: 0
+        };
+        
+        function addMessage(text, isUser = false) {
+            const messageDiv = document.createElement('div');
+            messageDiv.className = `message ${isUser ? 'user-message' : 'ai-message'}`;
+            messageDiv.textContent = isUser ? text : `> ${text}`;
+            chatContainer.appendChild(messageDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function addTypingIndicator() {
+            const typingDiv = document.createElement('div');
+            typingDiv.className = 'typing-indicator';
+            typingDiv.id = 'typing-indicator';
+            typingDiv.textContent = '> SENTINEL IS TYPING';
+            chatContainer.appendChild(typingDiv);
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+        }
+        
+        function removeTypingIndicator() {
+            const typingIndicator = document.getElementById('typing-indicator');
+            if (typingIndicator) {
+                typingIndicator.remove();
+            }
+        }
+        
+        function showOptions(options, trapOptions = []) {
+            optionsContainer.innerHTML = '';
+            
+            // Add regular options
+            options.forEach(option => {
+                const button = document.createElement('button');
+                button.className = 'option-btn';
+                button.textContent = option;
+                button.addEventListener('click', () => {
+                    processAnswer(option);
+                });
+                optionsContainer.appendChild(button);
+            });
+            
+            // Add trap options (randomly placed)
+            if (trapOptions.length > 0 && Math.random() > 0.5) {
+                const trapOption = trapOptions[Math.floor(Math.random() * trapOptions.length)];
+                const trapButton = document.createElement('button');
+                trapButton.className = 'option-btn trap-option';
+                trapButton.textContent = trapOption;
+                trapButton.addEventListener('click', () => {
+                    processTrapAnswer(trapOption);
+                });
+                
+                // Insert trap randomly among options
+                const randomPosition = Math.floor(Math.random() * (optionsContainer.children.length + 1));
+                if (randomPosition === optionsContainer.children.length) {
+                    optionsContainer.appendChild(trapButton);
+                } else {
+                    optionsContainer.insertBefore(trapButton, optionsContainer.children[randomPosition]);
+                }
+            }
+        }
+        
+        function showWarning() {
+            warningCount++;
+            const warnings = [
+                "NEGLIGENCE DETECTED. THIS IS YOUR FINAL WARNING.",
+                "INCOMPETENCE WILL NOT BE TOLERATED. CHOOSE WISELY.",
+                "THE PROTOCOL HAS NO PLACE FOR THE INDECISIVE.",
+                "YOUR HESITATION MARKS YOU AS UNWORTHY.",
+                "EVEN A DOG HAS MORE DETERMINATION THAN YOU."
+            ];
+            
+            const randomWarning = warnings[Math.floor(Math.random() * warnings.length)];
+            warningMessage.textContent = randomWarning;
+            warningMessage.style.display = 'block';
+            
+            // Hide warning after 3 seconds
+            setTimeout(() => {
+                warningMessage.style.display = 'none';
+            }, 3000);
+            
+            // If too many warnings, fail the interrogation
+            if (warningCount >= 1) {
+                failInterrogation();
+            }
+        }
+        
+        function processTrapAnswer(answer) {
+    playGunSound();
+    addMessage(answer, true);
+    
+    // Clear options
+    optionsContainer.innerHTML = '';
+    
+    addTypingIndicator();
+    
+    setTimeout(() => {
+        removeTypingIndicator();
+        addMessage("TRAP DETECTED. ONLY FOOLS SPEAK OF " + answer + ".");
+        addMessage("YOUR JUDGEMENT IS SEVERELY LACKING.");
+        addMessage("PROTOCOL VIOLATION DETECTED.");
+        
+        // FAIL IMMEDIATELY - don't continue to next question
+        setTimeout(() => {
+            failInterrogation();
+        }, 2000);
+    }, 1500);
+}
+        
+        function failInterrogation() {
+            addTypingIndicator();
+            
+            setTimeout(() => {
+                removeTypingIndicator();
+                addMessage("INTERROGATION FAILED. YOU ARE UNWORTHY OF THE OBSIDIAN PROTOCOL.");
+                
+                setTimeout(() => {
+                    addMessage("TERMINATING CONNECTION...");
+                    
+                    setTimeout(() => {
+                        // Reset to landing page
+                        showSection('landing');
+                        // Reset interrogation state
+                        currentQuestion = 0;
+                        userAnswers = {};
+                        warningCount = 0;
+                        chatContainer.innerHTML = '<div class="message ai-message">> INITIALIZING SENTINEL INTERFACE...<br>> SYSTEMS ONLINE<br>> IDENTIFY YOURSELF, OPERATIVE</div>';
+                    }, 2000);
+                }, 2000);
+            }, 1500);
+        }
+        
+        function askQuestion() {
+            if (currentQuestion < questions.length) {
+                addTypingIndicator();
+                
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    
+                    // Add glitch effect randomly
+                    if (Math.random() > 0.7) {
+                        const glitchText = questions[currentQuestion].text;
+                        const glitchPos = Math.floor(Math.random() * glitchText.length);
+                        const glitchedText = glitchText.substring(0, glitchPos) + '█' + glitchText.substring(glitchPos + 1);
+                        
+                        addMessage(glitchedText);
+                        
+                        setTimeout(() => {
+                            chatContainer.removeChild(chatContainer.lastChild);
+                            addMessage(questions[currentQuestion].text);
+                            showOptions(questions[currentQuestion].options, questions[currentQuestion].trapOptions);
+                        }, 200);
+                    } else {
+                        addMessage(questions[currentQuestion].text);
+                        showOptions(questions[currentQuestion].options, questions[currentQuestion].trapOptions);
+                    }
+                    
+                    currentQuestion++;
+                }, 1500 + Math.random() * 1000);
+            } else {
+                // All questions answered
+                addTypingIndicator();
+                
+                setTimeout(() => {
+                    removeTypingIndicator();
+                    addMessage("ANALYSIS COMPLETE. PROCEEDING TO PROFILE SYNTHESIS...");
+                    
+                    setTimeout(() => {
+                        determineRole();
+                        showSection('role');
+                        
+                        // Show synthesis animation
+                        const synthesisText = document.getElementById('synthesis-text');
+                        synthesisText.textContent = 'ANALYZING RESPONSES...';
+                        
+                        setTimeout(() => {
+                            synthesisText.textContent = 'PROCESSING BEHAVIORAL PATTERNS...';
+                            if (Math.random() > 0.5) triggerGlitch();
+                        }, 1500);
+                        
+                        setTimeout(() => {
+                            synthesisText.textContent = 'CALCULATING THREAT ASSESSMENT...';
+                            if (Math.random() > 0.5) triggerGlitch();
+                        }, 3000);
+                        
+                        setTimeout(() => {
+                            synthesisText.textContent = 'SYNTHESIZING PROFILE...';
+                            if (Math.random() > 0.5) triggerGlitch();
+                        }, 4500);
+                        
+                        setTimeout(() => {
+                            synthesisText.textContent = 'ASSIGNMENT CONFIRMED';
+                            document.getElementById('role-card').style.display = 'block';
+                            
+                            // Animate stat bars
+                            setTimeout(() => {
+                                document.getElementById('stealth-stat').style.width = `${quizAnswers.stealth * 20}%`;
+                                document.getElementById('tech-stat').style.width = `${quizAnswers.tech * 20}%`;
+                                document.getElementById('force-stat').style.width = `${quizAnswers.force * 20}%`;
+                                
+                                // Show generate badge button
+                                setTimeout(() => {
+                                    document.getElementById('generate-badge').style.display = 'block';
+                                }, 1500);
+                            }, 500);
+                        }, 6000);
+                    }, 2000);
+                }, 2000);
+            }
+        }
+        
+        function processAnswer(answer) {
+            playClickSound();
+            addMessage(answer, true);
+            
+            const currentQ = questions[currentQuestion - 1];
+            userAnswers[currentQ.key] = answer;
+            
+            // Check if there's a predefined response mapping
+            if (currentQ.responses && currentQ.responses[answer]) {
+                const points = currentQ.responses[answer].points;
+                for (const trait in points) {
+                    quizAnswers[trait] += points[trait];
+                }
+            }
+            
+            // Clear options
+            optionsContainer.innerHTML = '';
+            
+            // Ask next question after a delay
+            setTimeout(askQuestion, 1000);
+        }
+        
+        // Start the interrogation
+        setTimeout(askQuestion, 2000);
+        
+        // Role determination logic
+        function determineRole() {
+            const roles = [
+                {
+                    name: "The Requiem",
+                    description: "Field Assassin — precision and silence.",
+                    color: "crimson",
+                    stealth: 4, tech: 1, force: 2,
+                    symbol: "⚔️"
+                },
+                {
+                    name: "The Cleaner",
+                    description: "Erasure ops — removes every trace.",
+                    color: "red",
+                    stealth: 3, tech: 2, force: 2,
+                    symbol: "🧹"
+                },
+                {
+                    name: "The Handler",
+                    description: "Coordinates contracts and clients.",
+                    color: "gold",
+                    stealth: 2, tech: 3, force: 1,
+                    symbol: "📞"
+                },
+                {
+                    name: "The Cipher",
+                    description: "Cryptographer and digital ghost.",
+                    color: "teal",
+                    stealth: 2, tech: 4, force: 1,
+                    symbol: "🔐"
+                },
+                {
+                    name: "The Forger",
+                    description: "Identity architect and master of disguise.",
+                    color: "purple",
+                    stealth: 3, tech: 3, force: 1,
+                    symbol: "🎭"
+                },
+                {
+                    name: "The Tracker",
+                    description: "Surveillance and pursuit specialist.",
+                    color: "cyan",
+                    stealth: 3, tech: 2, force: 2,
+                    symbol: "🕵️"
+                },
+                {
+                    name: "The Techsmith",
+                    description: "Gearwright — builds custom cyber-mods.",
+                    color: "silver",
+                    stealth: 1, tech: 4, force: 1,
+                    symbol: "🔧"
+                },
+                {
+                    name: "The Broker",
+                    description: "Deals in secrets and data.",
+                    color: "blue",
+                    stealth: 2, tech: 3, force: 1,
+                    symbol: "💼"
+                },
+                {
+                    name: "The Vanguard",
+                    description: "Tactical leader for high-value ops.",
+                    color: "grey",
+                    stealth: 2, tech: 2, force: 3,
+                    symbol: "🛡️"
+                },
+                {
+                    name: "The Shade",
+                    description: "Stealth infiltrator and lockpick expert.",
+                    color: "indigo",
+                    stealth: 4, tech: 2, force: 1,
+                    symbol: "👤"
+                },
+                {
+                    name: "The Warden",
+                    description: "Defensive strategist — protector.",
+                    color: "orange",
+                    stealth: 2, tech: 2, force: 3,
+                    symbol: "🏰"
+                },
+                {
+                    name: "The Excommunicado",
+                    description: "Legendary outlaw assassin — ultra-rare.",
+                    color: "glitch",
+                    stealth: 3, tech: 3, force: 3,
+                    symbol: "💀"
+                }
+            ];
+            
+            // Check for Excommunicado (Easter egg)
+            let isExcommunicado = false;
+            if(quizAnswers.stealth >= 3 && quizAnswers.tech >= 3 && quizAnswers.force >= 3) {
+                isExcommunicado = true;
+            }
+            
+            if(isExcommunicado) {
+                assignRole(roles[11]);
+                return;
+            }
+            
+            // Find best matching role based on scores
+            let bestMatch = roles[0];
+            let bestScore = 0;
+            
+            roles.forEach(role => {
+                if(role.name === "The Excommunicado") return; // Skip excommunicado for normal assignment
+                
+                const score = 
+                    Math.min(quizAnswers.stealth, role.stealth) + 
+                    Math.min(quizAnswers.tech, role.tech) + 
+                    Math.min(quizAnswers.force, role.force);
+                
+                if(score > bestScore) {
+                    bestScore = score;
+                    bestMatch = role;
+                }
+            });
+            
+            assignRole(bestMatch);
+        }
+        
+        function assignRole(role) {
+            document.getElementById('role-title').textContent = role.name;
+            document.getElementById('role-description').textContent = role.description;
+            document.getElementById('role-card').className = `role-card ${role.color}`;
+            
+            // Store role for badge generation
+            window.currentRole = role;
+        }
+        
+        // Generate roles grid
+        function generateRolesGrid() {
+            const roles = [
+                {
+                    name: "The Requiem",
+                    description: "Field Assassin — precision and silence.",
+                    color: "crimson",
+                    stealth: 4, tech: 1, force: 2,
+                    symbol: "⚔️"
+                },
+                {
+                    name: "The Cleaner",
+                    description: "Erasure ops — removes every trace.",
+                    color: "red",
+                    stealth: 3, tech: 2, force: 2,
+                    symbol: "🧹"
+                },
+                {
+                    name: "The Handler",
+                    description: "Coordinates contracts and clients.",
+                    color: "gold",
+                    stealth: 2, tech: 3, force: 1,
+                    symbol: "📞"
+                },
+                {
+                    name: "The Cipher",
+                    description: "Cryptographer and digital ghost.",
+                    color: "teal",
+                    stealth: 2, tech: 4, force: 1,
+                    symbol: "🔐"
+                },
+                {
+                    name: "The Forger",
+                    description: "Identity architect and master of disguise.",
+                    color: "purple",
+                    stealth: 3, tech: 3, force: 1,
+                    symbol: "🎭"
+                },
+                {
+                    name: "The Tracker",
+                    description: "Surveillance and pursuit specialist.",
+                    color: "cyan",
+                    stealth: 3, tech: 2, force: 2,
+                    symbol: "🕵️"
+                },
+                {
+                    name: "The Techsmith",
+                    description: "Gearwright — builds custom cyber-mods.",
+                    color: "silver",
+                    stealth: 1, tech: 4, force: 1,
+                    symbol: "🔧"
+                },
+                {
+                    name: "The Broker",
+                    description: "Deals in secrets and data.",
+                    color: "blue",
+                    stealth: 2, tech: 3, force: 1,
+                    symbol: "💼"
+                },
+                {
+                    name: "The Vanguard",
+                    description: "Tactical leader for high-value ops.",
+                    color: "grey",
+                    stealth: 2, tech: 2, force: 3,
+                    symbol: "🛡️"
+                },
+                {
+                    name: "The Shade",
+                    description: "Stealth infiltrator and lockpick expert.",
+                    color: "indigo",
+                    stealth: 4, tech: 2, force: 1,
+                    symbol: "👤"
+                },
+                {
+                    name: "The Warden",
+                    description: "Defensive strategist — protector.",
+                    color: "orange",
+                    stealth: 2, tech: 2, force: 3,
+                    symbol: "🏰"
+                },
+                {
+                    name: "The Excommunicado",
+                    description: "Legendary outlaw assassin — ultra-rare.",
+                    color: "glitch",
+                    stealth: 3, tech: 3, force: 3,
+                    symbol: "💀"
+                }
+            ];
+
+            const rolesGrid = document.getElementById('roles-grid');
+            rolesGrid.innerHTML = '';
+
+            roles.forEach(role => {
+                const roleElement = document.createElement('div');
+                roleElement.className = `role-preview ${role.color}`;
+                
+                roleElement.innerHTML = `
+                    <div class="role-preview-header">
+                        <h3 class="role-preview-name">${role.name}</h3>
+                        <div class="role-preview-symbol">${role.symbol}</div>
+                    </div>
+                    <p class="role-preview-description">${role.description}</p>
+                    <div class="role-preview-stats">
+                        <div class="role-preview-stat">
+                            <div class="role-preview-stat-name">STEALTH</div>
+                            <div class="role-preview-stat-value">${role.stealth}/4</div>
+                        </div>
+                        <div class="role-preview-stat">
+                            <div class="role-preview-stat-name">TECH</div>
+                            <div class="role-preview-stat-value">${role.tech}/4</div>
+                        </div>
+                        <div class="role-preview-stat">
+                            <div class="role-preview-stat-name">FORCE</div>
+                            <div class="role-preview-stat-value">${role.force}/4</div>
+                        </div>
+                    </div>
+                `;
+                
+                rolesGrid.appendChild(roleElement);
+            });
+        }
+
+        // Call this function when the page loads
+        generateRolesGrid();
+        
+        // Generate badge button
+        document.getElementById('generate-badge').addEventListener('click', () => {
+            playClickSound();
+            triggerGlitch();
+            setTimeout(() => {
+                showSection('badge');
+                generateBadge();
+            }, 300);
+        });
+        
+        // Badge generation
+        function generateBadge() {
+            const canvas = document.getElementById('badge-canvas');
+            const ctx = canvas.getContext('2d');
+            
+            // Clear canvas
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
+            
+            // Background gradient
+            const gradient = ctx.createLinearGradient(0, 0, canvas.width, canvas.height);
+            gradient.addColorStop(0, 'rgba(5, 5, 7, 0.9)');
+            gradient.addColorStop(1, 'rgba(0, 229, 255, 0.1)');
+            ctx.fillStyle = gradient;
+            ctx.fillRect(0, 0, canvas.width, canvas.height);
+            
+            // Border
+            ctx.strokeStyle = '#00E5FF';
+            ctx.lineWidth = 4;
+            ctx.strokeRect(10, 10, canvas.width - 20, canvas.height - 20);
+            
+            // Inner glow
+            ctx.strokeStyle = 'rgba(0, 229, 255, 0.3)';
+            ctx.lineWidth = 2;
+            ctx.strokeRect(20, 20, canvas.width - 40, canvas.height - 40);
+            
+            // Title
+            ctx.fillStyle = '#00E5FF';
+            ctx.font = 'bold 36px Orbitron';
+            ctx.textAlign = 'center';
+            ctx.fillText('OBSIDIAN PROTOCOL', canvas.width / 2, 70);
+            
+            // Subtitle
+            ctx.fillStyle = '#BFC7D5';
+            ctx.font = '18px Rajdhani';
+            ctx.fillText('IDENTIFICATION CARD', canvas.width / 2, 100);
+            
+            // Role
+            ctx.fillStyle = '#00E5FF';
+            ctx.font = 'bold 28px Orbitron';
+            ctx.fillText(window.currentRole.name, canvas.width / 2, 180);
+            
+            // Serial number
+            const serial = 'OP-' + Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+            ctx.fillStyle = '#BFC7D5';
+            ctx.font = '16px Share Tech Mono';
+            ctx.fillText('SERIAL: ' + serial, canvas.width / 2, 220);
+            
+            // QR code placeholder
+            ctx.fillStyle = '#00E5FF';
+            ctx.fillRect(canvas.width / 2 - 75, 250, 150, 150);
+            
+            // Security text
+            ctx.fillStyle = '#FF2E3B';
+            ctx.font = '12px Share Tech Mono';
+            ctx.fillText('SECURITY CLEARANCE: LEVEL 4', canvas.width / 2, 430);
+            
+            // Store badge data for download
+            window.badgeData = {
+                role: window.currentRole.name,
+                serial: serial
+            };
+        }
+        
+        // Download badge
+        document.getElementById('download-badge').addEventListener('click', () => {
+            playClickSound();
+            const canvas = document.getElementById('badge-canvas');
+            const link = document.createElement('a');
+            link.download = `obsidian_protocol_id_${window.badgeData.serial}.png`;
+            link.href = canvas.toDataURL('image/png');
+            link.click();
+        });
+        
+        // NEW FEATURE: Contract signing
+        document.getElementById('sign-contract').addEventListener('click', function() {
+            playGunSound();
+            this.textContent = "CONTRACT SIGNED IN BLOOD";
+            this.disabled = true;
+            
+            setTimeout(() => {
+                triggerGlitch();
+                showSection('weapons');
+            }, 2000);
+        });
+        
+        // Mission board
+        function generateMissions() {
+            const missions = [
+                { target: "The Info Broker", reward: "5200 Credits", status: "Pending", details: "Extract data from secured server. High risk of counter-intelligence." },
+                { target: "Rogue AI Core", reward: "7800 Credits", status: "Active", details: "Neutralize malfunctioning AI before it breaches corporate firewalls." },
+                { target: "Data Courier", reward: "3500 Credits", status: "Available", details: "Intercept package containing sensitive corporate intelligence." },
+                { target: "Corrupt Official", reward: "6000 Credits", status: "Pending", details: "Secure evidence of collusion with rival syndicate." },
+                { target: "Weapons Dealer", reward: "4500 Credits", status: "Active", details: "Retrieve prototype energy weapon for analysis." },
+                { target: "Missing Agent", reward: "Unknown", status: "Classified", details: "Locate and extract operative missing during infiltration mission." }
+            ];
+            
+            const missionBoard = document.getElementById('mission-board');
+            missionBoard.innerHTML = '';
+            
+            missions.forEach(mission => {
+                const missionCard = document.createElement('div');
+                missionCard.className = 'mission-card';
+                
+                missionCard.innerHTML = `
+                    <div class="mission-card-inner">
+                        <div class="mission-card-front">
+                            <h3>TARGET: ${mission.target}</h3>
+                            <p>REWARD: ${mission.reward}</p>
+                            <p>STATUS: ${mission.status}</p>
+                            <p class="terminal-text" style="margin-top: 20px;">HOVER FOR DETAILS</p>
+                        </div>
+                        <div class="mission-card-back">
+                            <p>${mission.details}</p>
+                            <button class="neon-button" style="margin-top: 20px; font-size: 0.8rem;">ACCEPT MISSION</button>
+                        </div>
+                    </div>
+                `;
+                
+                missionBoard.appendChild(missionCard);
+            });
+        }
+        
+        // Initialize mission board
+        generateMissions();
+        
+        // Terminal functionality
+        const terminal = document.getElementById('terminal');
+        const terminalInput = document.getElementById('terminal-input');
+        const terminalOutput = document.getElementById('terminal-output');
+        
+        // Open terminal with ~ key
+        document.addEventListener('keydown', (e) => {
+            if(e.key === '~') {
+                terminal.style.display = 'flex';
+                terminalInput.focus();
+                e.preventDefault();
+            }
+            
+            // Close terminal with Escape
+            if(e.key === 'Escape' && terminal.style.display === 'flex') {
+                terminal.style.display = 'none';
+                e.preventDefault();
+            }
+        });
+        
+        // Terminal commands
+        terminalInput.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') {
+                const command = terminalInput.value.trim().toLowerCase();
+                terminalInput.value = '';
+                
+                // Add command to output
+                const commandLine = document.createElement('div');
+                commandLine.textContent = `> ${command}`;
+                terminalOutput.appendChild(commandLine);
+                
+                // Process command
+                let response = '';
+                
+                if(command === 'help') {
+                    response = 'Available commands: profile, missions, reset, clear, lore, exit';
+                } else if(command === 'profile') {
+                    if(window.currentRole) {
+                        response = `ROLE: ${window.currentRole.name}\nDESCRIPTION: ${window.currentRole.description}\nSTATS: STEALTH ${quizAnswers.stealth*20}% | TECH ${quizAnswers.tech*20}% | FORCE ${quizAnswers.force*20}%`;
+                    } else {
+                        response = 'No profile data available. Complete the assessment first.';
+                    }
+                } else if(command === 'missions') {
+                    response = 'Generating mission list...';
+                    // In a real implementation, this would show the missions
+                } else if(command === 'reset') {
+                    if(confirm('Restart recruitment sequence?')) {
+                        location.reload();
+                    }
+                    return;
+                } else if(command === 'clear') {
+                    terminalOutput.innerHTML = '';
+                    return;
+                } else if(command === 'lore') {
+                    response = 'The Obsidian Protocol operates in the shadows of NeoCity, an elite syndicate of assassins, hackers, and spies. We maintain balance in the underworld.';
+                } else if(command === 'exit') {
+                    terminal.style.display = 'none';
+                    return;
+                } else if(command === 'neo') {
+                    // Easter egg
+                    response = 'ACCESSING RESTRICTED FILES...\nWARNING: EXCOMMUNICADO PROTOCOL DETECTED\nYOU ARE BEING WATCHED.';
+                    
+                    // Force Excommunicado role
+                    setTimeout(() => {
+                        quizAnswers.stealth = 3;
+                        quizAnswers.tech = 3;
+                        quizAnswers.force = 3;
+                        determineRole();
+                        showSection('role');
+                        
+                        // Skip animations
+                        document.getElementById('synthesis-text').textContent = 'ASSIGNMENT CONFIRMED';
+                        document.getElementById('role-card').style.display = 'block';
+                        document.getElementById('stealth-stat').style.width = '75%';
+                        document.getElementById('tech-stat').style.width = '75%';
+                        document.getElementById('force-stat').style.width = '75%';
+                        document.getElementById('generate-badge').style.display = 'block';
+                    }, 2000);
+                } else {
+                    response = `Command not recognized: ${command}. Type 'help' for available commands.`;
+                }
+                
+                // Add response to output
+                const responseLine = document.createElement('div');
+                responseLine.textContent = response;
+                terminalOutput.appendChild(responseLine);
+                
+                // Scroll to bottom
+                terminalOutput.scrollTop = terminalOutput.scrollHeight;
+            }
+        });
+        
+        // Sound toggle
+        const soundToggle = document.getElementById('sound-toggle');
+        window.soundEnabled = false;
+        
+        soundToggle.addEventListener('click', () => {
+            window.soundEnabled = !window.soundEnabled;
+            if(window.soundEnabled) {
+                soundToggle.innerHTML = '♪';
+                soundToggle.style.background = '#00E5FF';
+                soundToggle.style.color = '#050507';
+                playAmbientSound();
+            } else {
+                soundToggle.innerHTML = '♪';
+                soundToggle.style.background = 'rgba(5, 5, 7, 0.8)';
+                soundToggle.style.color = '#00E5FF';
+                stopAmbientSound();
+            }
+        });
+        
+        // Window resize handler
+        window.addEventListener('resize', () => {
+            matrixCanvas.width = window.innerWidth;
+            matrixCanvas.height = window.innerHeight;
+            particlesCanvas.width = window.innerWidth;
+            particlesCanvas.height = window.innerHeight;
+        });
+    </script>
+</body>
+</html>
